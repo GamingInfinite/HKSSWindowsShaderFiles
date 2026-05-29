@@ -11,6 +11,10 @@ Shader "Custom/Heat Effect" {
             "QUEUE"="Transparent"
             "RenderType"="Opaque"
         }
+        GrabPass
+        {
+            "_GrabTexture"
+        }
         Pass {
             Name ""
             ZWrite Off
@@ -27,7 +31,7 @@ Shader "Custom/Heat Effect" {
             Tags {
                 "LIGHTMODE"="ALWAYS"
                 "QUEUE"="Transparent"
-                "RenderType"="Opaque"
+                "RenderType"="Transparent"
             }
             CGPROGRAM
             

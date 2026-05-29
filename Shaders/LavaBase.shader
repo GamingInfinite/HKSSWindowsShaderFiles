@@ -68,6 +68,9 @@ Shader "Custom/LavaBase" {
             // CBUFFER_END
             // Textures for DX11VertexSM40
 
+            float _OffsetFlow;
+            float4 _TintColor;
+
             v2f vert(appdata v)
             {
                 v2f o;
@@ -92,8 +95,8 @@ Shader "Custom/LavaBase" {
                 tmp0.w = floor(-tmp2.x);
                 tmp2.x = tmp0.w * _Speed;
                 tmp0.z = tmp2.x * _Time.y + tmp0.z;
-                tmp0.z = PropsArray._OffsetFlow * tmp0.w + tmp0.z;
-                o.color = v.color * PropsArray._TintColor;
+                tmp0.z = _OffsetFlow * tmp0.w + tmp0.z;
+                o.color = v.color * _TintColor;
                 tmp0.y = tmp0.z + tmp0.y;
                 tmp0.x = v.texcoord.x;
                 o.texcoord.xy = tmp0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -314,6 +317,9 @@ Shader "Custom/LavaBase" {
             // CBUFFER_END
             // Textures for DX11VertexSM40
 
+            float _OffsetFlow;
+            float4 _TintColor;
+
             v2f vert(appdata v)
             {
                 v2f o;
@@ -338,8 +344,8 @@ Shader "Custom/LavaBase" {
                 tmp0.w = floor(-tmp2.x);
                 tmp2.x = tmp0.w * _Speed;
                 tmp0.z = tmp2.x * _Time.y + tmp0.z;
-                tmp0.z = PropsArray._OffsetFlow * tmp0.w + tmp0.z;
-                o.color = v.color * PropsArray._TintColor;
+                tmp0.z = _OffsetFlow * tmp0.w + tmp0.z;
+                o.color = v.color * _TintColor;
                 tmp0.x = tmp0.z + tmp0.y;
                 tmp0.y = v.texcoord.y;
                 o.texcoord.xy = tmp0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -606,6 +612,9 @@ Shader "Custom/LavaBase" {
                 int unity_BaseInstanceID; // 0 (starting at cb3[0].x)
             // CBUFFER_END
             // Textures for DX11VertexSM40
+            float _OffsetFlow;
+            float4 _TintColor;
+
 
             v2f vert(appdata v)
             {
@@ -631,8 +640,8 @@ Shader "Custom/LavaBase" {
                 tmp0.w = floor(-tmp2.x);
                 tmp2.x = tmp0.w * _Speed;
                 tmp0.z = tmp2.x * _Time.y + tmp0.z;
-                tmp0.z = PropsArray._OffsetFlow * tmp0.w + tmp0.z;
-                o.color = v.color * PropsArray._TintColor;
+                tmp0.z = _OffsetFlow * tmp0.w + tmp0.z;
+                o.color = v.color * _TintColor;
                 tmp0.x = tmp0.z + tmp0.y;
                 tmp0.y = v.texcoord.y;
                 o.texcoord.xy = tmp0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -793,8 +802,8 @@ Shader "Custom/LavaBase" {
                 tmp1 = tmp1 + unity_ObjectToWorld._m03_m13_m23_m33;
                 tmp0.z = tmp0.z * _OffsetZ;
                 tmp0.z = _Speed * _Time.y + tmp0.z;
-                tmp0.z = tmp0.z + PropsArray._OffsetFlow;
-                o.color = v.color * PropsArray._TintColor;
+                tmp0.z = tmp0.z + _OffsetFlow;
+                o.color = v.color * _TintColor;
                 tmp0.x = dot(unity_ObjectToWorld._m00_m10_m20, unity_ObjectToWorld._m00_m10_m20);
                 tmp0.y = dot(unity_ObjectToWorld._m01_m11_m21, unity_ObjectToWorld._m01_m11_m21);
                 tmp0.xy = sqrt(tmp0.xy);

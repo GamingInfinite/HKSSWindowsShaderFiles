@@ -1,65 +1,161 @@
-Shader "Hollow Knight/Reflecting Sprite (Diffuse)" {
-	Properties {
-		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-		_Color ("Tint", Vector) = (1,1,1,1)
-		[HideInInspector] _RendererColor ("RendererColor", Vector) = (1,1,1,1)
-		[HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
-		[PerRendererData] _AlphaTex ("External Alpha", 2D) = "white" {}
-		[PerRendererData] _EnableExternalAlpha ("Enable External Alpha", Float) = 0
-		_ReflectionOffset ("Reflection Offset", Float) = 0
-		_Reflectance ("Reflectance", Range(0, 1)) = 0
-	}
-	//DummyShaderTextExporter
-	SubShader{
-		Tags { "RenderType"="Opaque" }
-		LOD 200
+Shader "Hollow Knight/Reflecting Sprite (Diffuse)"
+{
+    Properties
+    {
+        [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+        _Color ("Tint", Color) = (1,1,1,1)
 
-		Pass
-		{
-			HLSLPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+        [HideInInspector]
+        _RendererColor ("RendererColor", Color) = (1,1,1,1)
 
-			float4x4 unity_ObjectToWorld;
-			float4x4 unity_MatrixVP;
-			float4 _MainTex_ST;
+        [HideInInspector]
+        _Flip ("Flip", Vector) = (1,1,1,1)
 
-			struct Vertex_Stage_Input
-			{
-				float4 pos : POSITION;
-				float2 uv : TEXCOORD0;
-			};
+        [PerRendererData]
+        _AlphaTex ("External Alpha", 2D) = "white" {}
 
-			struct Vertex_Stage_Output
-			{
-				float2 uv : TEXCOORD0;
-				float4 pos : SV_POSITION;
-			};
+        [PerRendererData]
+        _EnableExternalAlpha ("Enable External Alpha", Float) = 0
 
-			Vertex_Stage_Output vert(Vertex_Stage_Input input)
-			{
-				Vertex_Stage_Output output;
-				output.uv = (input.uv.xy * _MainTex_ST.xy) + _MainTex_ST.zw;
-				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
-				return output;
-			}
+        _ReflectionOffset ("Reflection Offset", Float) = 0
+        _Reflectance ("Reflectance", Range(0,1)) = 0
+    }
 
-			Texture2D<float4> _MainTex;
-			SamplerState sampler_MainTex;
-			float4 _Color;
+    SubShader
+    {
+        Tags
+        {
+            "Queue"="Transparent"
+            "RenderType"="Transparent"
+            "IgnoreProjector"="True"
+            "PreviewType"="Plane"
+            "CanUseSpriteAtlas"="True"
+            "DisableBatching"="True"
+        }
 
-			struct Fragment_Stage_Input
-			{
-				float2 uv : TEXCOORD0;
-			};
+        GrabPass
+        {
+            "_GrabTexture"
+        }
 
-			float4 frag(Fragment_Stage_Input input) : SV_TARGET
-			{
-				return _MainTex.Sample(sampler_MainTex, input.uv.xy) * _Color;
-			}
+        Pass
+        {
+            Blend One OneMinusSrcAlpha
+            Cull Off
+            Lighting Off
+            ZWrite Off
+            ZTest LEqual
 
-			ENDHLSL
-		}
-	}
-	Fallback "Sprites/Diffuse"
+            CGPROGRAM
+
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "UnityCG.cginc"
+
+            sampler2D _MainTex;
+            sampler2D _GrabTexture;
+
+            float4 _MainTex_ST;
+
+            fixed4 _Color;
+            fixed4 _RendererColor;
+
+            float2 _Flip;
+
+            float _ReflectionOffset;
+            float _Reflectance;
+
+            struct appdata
+            {
+                float4 vertex   : POSITION;
+                float4 color    : COLOR;
+                float2 uv       : TEXCOORD0;
+            };
+
+            struct v2f
+            {
+                float4 pos          : SV_POSITION;
+
+                float2 uv           : TEXCOORD0;
+
+                fixed4 color        : COLOR0;
+
+                float4 grabPos      : TEXCOORD1;
+            };
+
+            v2f vert(appdata v)
+            {
+                v2f o;
+
+                float4 vertex = v.vertex;
+
+                vertex.xy *= _Flip;
+
+                float4 worldPos =
+                    mul(unity_ObjectToWorld, vertex);
+
+                o.pos = mul(UNITY_MATRIX_VP, worldPos);
+
+                o.uv =
+                    TRANSFORM_TEX(v.uv, _MainTex);
+
+                o.color =
+                    v.color * _Color * _RendererColor;
+
+                // Reflection across camera/world Y plane
+
+                float reflectedY =
+                    (_WorldSpaceCameraPos.y * 2.0)
+                    - worldPos.y
+                    + _ReflectionOffset;
+
+                float4 reflectedWorld =
+                    float4(
+                        worldPos.x,
+                        reflectedY,
+                        worldPos.z,
+                        1.0
+                    );
+
+                float4 reflectedClip =
+                    mul(UNITY_MATRIX_VP, reflectedWorld);
+
+                o.grabPos =
+                    ComputeGrabScreenPos(reflectedClip);
+
+                return o;
+            }
+
+            fixed4 frag(v2f i) : SV_Target
+            {
+                fixed4 sprite =
+                    tex2D(_MainTex, i.uv) * i.color;
+
+                // Premultiply alpha
+                sprite.rgb *= sprite.a;
+
+                float2 grabUV =
+                    i.grabPos.xy / i.grabPos.w;
+
+                fixed4 reflection =
+                    tex2D(_GrabTexture, grabUV);
+
+                fixed4 result =
+                    lerp(
+                        sprite,
+                        reflection,
+                        _Reflectance * sprite.a
+                    );
+
+                result.a = sprite.a;
+
+                return result;
+            }
+
+            ENDCG
+        }
+    }
+
+    Fallback "Sprites/Default"
 }
