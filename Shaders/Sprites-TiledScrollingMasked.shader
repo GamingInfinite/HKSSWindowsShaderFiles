@@ -2095,6 +2095,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 int unity_BaseInstanceID; // 0 (starting at cb3[0].x)
             // CBUFFER_END
             // Textures for DX11VertexSM40
+            float2 unity_SpriteFlip;
 
             v2f vert(appdata v)
             {
@@ -2106,7 +2107,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 float4 tmp4;
                 tmp0.x = v.sv_instanceid.x + unity_BaseInstanceID;
                 tmp0.y = float1(int1(tmp0.x) << 1);
-                tmp0.zw = v.vertex.xy * PerDrawSpriteArray.unity_SpriteFlipArray;
+                tmp0.zw = v.vertex.xy * unity_SpriteFlip;
                 tmp1.x = float1(int1(tmp0.x) << 3);
                 tmp0.x = sin(PropsArray._FogRotation);
                 tmp2.x = cos(PropsArray._FogRotation);

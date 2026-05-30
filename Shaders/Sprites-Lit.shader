@@ -50,6 +50,8 @@ Shader "Sprites/Lit" {
             #pragma shader_feature INSTANCING_ON
             #pragma shader_feature PIXELSNAP_ON
             #pragma shader_feature SATURATION_LERP
+
+            #include "UnityCG.cginc"
             
 
             #if AMBIENT_LERP && BLACKTHREAD && COLOR_FLASH && ETC1_EXTERNAL_ALPHA && INSTANCING_ON && PIXELSNAP_ON && SATURATION_LERP
@@ -4409,31 +4411,29 @@ Shader "Sprites/Lit" {
             // CBs for DX11VertexSM40
             float4 _Color; // 32 (starting at cb0[2].x)
             // CBUFFER_START(UnityDrawCallInfo) // 2
-                // int unity_BaseInstanceID; // 0 (starting at cb2[0].x)
+                //int unity_BaseInstanceID; // 0 (starting at cb2[0].x)
             // CBUFFER_END
             // Textures for DX11VertexSM40
 
             v2f vert(appdata v)
             {
                 v2f o;
+
                 float4 tmp0;
                 float4 tmp1;
-                float4 tmp2;
-                tmp0.x = v.sv_instanceid.x + unity_BaseInstanceID;
-                tmp0.y = float1(int1(tmp0.x) << 1);
-                tmp0.x = float1(int1(tmp0.x) << 3);
-                tmp0.zw = v.vertex.xy * PerDrawSpriteArray.unity_SpriteFlipArray;
-                tmp1 = tmp0.wwww * unity_Builtins0Array.unity_ObjectToWorldArray._m01_m11_m21_m31;
-                tmp1 = unity_Builtins0Array.unity_ObjectToWorldArray._m00_m10_m20_m30 * tmp0.zzzz + tmp1;
-                tmp1 = unity_Builtins0Array.unity_ObjectToWorldArray._m02_m12_m22_m32 * v.vertex.zzzz + tmp1;
-                tmp1 = tmp1 + unity_Builtins0Array.unity_ObjectToWorldArray._m03_m13_m23_m33;
-                tmp2 = tmp1.yyyy * unity_MatrixVP._m01_m11_m21_m31;
-                tmp2 = unity_MatrixVP._m00_m10_m20_m30 * tmp1.xxxx + tmp2;
-                tmp2 = unity_MatrixVP._m02_m12_m22_m32 * tmp1.zzzz + tmp2;
-                o.position = unity_MatrixVP._m03_m13_m23_m33 * tmp1.wwww + tmp2;
+
+                tmp0.zw = v.vertex.xy;
+
+                float4 localPos = v.vertex;
+                localPos.xy = tmp0.zw;
+
+                o.position = UnityObjectToClipPos(localPos);
+
                 tmp1 = v.color * _Color;
-                o.color = tmp1 * PerDrawSpriteArray.unity_SpriteRendererColorArray;
+                o.color = tmp1;
+
                 o.texcoord.xy = v.texcoord.xy;
+
                 return o;
             }
 
