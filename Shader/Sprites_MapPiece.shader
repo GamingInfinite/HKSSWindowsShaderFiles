@@ -1,64 +1,99 @@
-Shader "Sprites/MapPiece" {
-	Properties {
-		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-		_Color ("Tint", Vector) = (1,1,1,1)
-		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
-		[HideInInspector] _RendererColor ("RendererColor", Vector) = (1,1,1,1)
-		[HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
-		[PerRendererData] _AlphaTex ("External Alpha", 2D) = "white" {}
-		[PerRendererData] _EnableExternalAlpha ("Enable External Alpha", Float) = 0
-		_GreyTransLerp ("Greyscale Transparency Lerp", Range(0, 1)) = 1
-	}
-	//DummyShaderTextExporter
-	SubShader{
-		Tags { "RenderType"="Opaque" }
-		LOD 200
+Shader "Sprites/MapPiece"
+{
+    Properties
+    {
+        [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+        _Color ("Tint", Color) = (1,1,1,1)
 
-		Pass
-		{
-			HLSLPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+        [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 
-			float4x4 unity_ObjectToWorld;
-			float4x4 unity_MatrixVP;
-			float4 _MainTex_ST;
+        [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
+        [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
 
-			struct Vertex_Stage_Input
-			{
-				float4 pos : POSITION;
-				float2 uv : TEXCOORD0;
-			};
+        [PerRendererData] _AlphaTex ("External Alpha", 2D) = "white" {}
+        [PerRendererData] _EnableExternalAlpha ("Enable External Alpha", Float) = 0
 
-			struct Vertex_Stage_Output
-			{
-				float2 uv : TEXCOORD0;
-				float4 pos : SV_POSITION;
-			};
+        _GreyTransLerp ("Greyscale Transparency Lerp", Range(0,1)) = 1
+    }
 
-			Vertex_Stage_Output vert(Vertex_Stage_Input input)
-			{
-				Vertex_Stage_Output output;
-				output.uv = (input.uv.xy * _MainTex_ST.xy) + _MainTex_ST.zw;
-				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
-				return output;
-			}
+    SubShader
+    {
+        Tags
+        {
+            "CanUseSpriteAtlas"="true"
+            "IGNOREPROJECTOR"="true"
+            "PreviewType"="Plane"
+            "QUEUE"="Transparent"
+            "RenderType"="Transparent"
+        }
 
-			Texture2D<float4> _MainTex;
-			SamplerState sampler_MainTex;
-			float4 _Color;
+        Cull Off
+        Lighting Off
+        ZWrite Off
+        Blend One OneMinusSrcAlpha
 
-			struct Fragment_Stage_Input
-			{
-				float2 uv : TEXCOORD0;
-			};
+        Pass
+        {
+            CGPROGRAM
 
-			float4 frag(Fragment_Stage_Input input) : SV_TARGET
-			{
-				return _MainTex.Sample(sampler_MainTex, input.uv.xy) * _Color;
-			}
+            #pragma vertex vert
+            #pragma fragment frag
 
-			ENDHLSL
-		}
-	}
+            #include "UnityCG.cginc"
+
+            sampler2D _MainTex;
+
+            fixed4 _Color;
+            fixed4 _RendererColor;
+            float2 _Flip;
+            float _GreyTransLerp;
+
+            struct appdata
+            {
+                float4 vertex   : POSITION;
+                fixed4 color    : COLOR;
+                float2 texcoord : TEXCOORD0;
+            };
+
+            struct v2f
+            {
+                float4 vertex   : SV_POSITION;
+                fixed4 color    : COLOR;
+                float2 uv       : TEXCOORD0;
+            };
+
+            v2f vert(appdata v)
+            {
+                v2f o;
+
+                float4 pos = v.vertex;
+                pos.xy *= _Flip;
+
+                o.vertex = UnityObjectToClipPos(pos);
+                o.uv = v.texcoord;
+
+                o.color = v.color * _Color * _RendererColor;
+
+                return o;
+            }
+
+            fixed4 frag(v2f i) : SV_Target
+            {
+                fixed4 tex = tex2D(_MainTex, i.uv);
+
+                float alphaMul =
+                    (_GreyTransLerp * (tex.r - 1.0)) + 1.0;
+
+                tex.a *= alphaMul;
+
+                tex *= i.color;
+
+                tex.rgb *= tex.a;
+
+                return tex;
+            }
+
+            ENDCG
+        }
+    }
 }

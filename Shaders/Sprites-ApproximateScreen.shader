@@ -1,60 +1,294 @@
 Shader "Sprites/Approximate Screen" {
-	Properties {
-		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-		_Color ("Tint", Vector) = (1,1,1,1)
-		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
-	}
-	//DummyShaderTextExporter
-	SubShader{
-		Tags { "RenderType"="Opaque" }
-		LOD 200
+    Properties {
+        [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+        _Color ("Tint", Color) = (1, 1, 1, 1)
+        [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
+    }
+    SubShader {
+        Tags {
+            "CanUseSpriteAtlas"="true"
+            "IGNOREPROJECTOR"="true"
+            "PreviewType"="Plane"
+            "QUEUE"="Transparent"
+            "RenderType"="Transparent"
+        }
+        Pass {
+            Name ""
+            Blend One One, One One
+            ZClip On
+            ZWrite Off
+            Cull Off
+            Tags {
+                "CanUseSpriteAtlas"="true"
+                "IGNOREPROJECTOR"="true"
+                "PreviewType"="Plane"
+                "QUEUE"="Transparent"
+                "RenderType"="Transparent"
+            }
+            CGPROGRAM
+            
+            #pragma vertex vert
+            #pragma fragment frag
 
-		Pass
-		{
-			HLSLPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+            #pragma shader_feature ETC1_EXTERNAL_ALPHA
+            #pragma shader_feature PIXELSNAP_ON
+            
 
-			float4x4 unity_ObjectToWorld;
-			float4x4 unity_MatrixVP;
-			float4 _MainTex_ST;
+            #if ETC1_EXTERNAL_ALPHA && PIXELSNAP_ON // :DX11VertexSM40
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
+            struct v2f
+            {
+                float4 position : SV_POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
 
-			struct Vertex_Stage_Input
-			{
-				float4 pos : POSITION;
-				float2 uv : TEXCOORD0;
-			};
+            // CBs for DX11VertexSM40
+            float4 _Color; // 32 (starting at cb0[2].x)
+            // Textures for DX11VertexSM40
 
-			struct Vertex_Stage_Output
-			{
-				float2 uv : TEXCOORD0;
-				float4 pos : SV_POSITION;
-			};
+            v2f vert(appdata v)
+            {
+                v2f o;
+                float4 tmp0;
+                float4 tmp1;
+                tmp0 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
+                tmp0 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp0;
+                tmp0 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp0;
+                tmp0 = tmp0 + unity_ObjectToWorld._m03_m13_m23_m33;
+                tmp1 = tmp0.yyyy * unity_MatrixVP._m01_m11_m21_m31;
+                tmp1 = unity_MatrixVP._m00_m10_m20_m30 * tmp0.xxxx + tmp1;
+                tmp1 = unity_MatrixVP._m02_m12_m22_m32 * tmp0.zzzz + tmp1;
+                tmp0 = unity_MatrixVP._m03_m13_m23_m33 * tmp0.wwww + tmp1;
+                tmp0.xy = tmp0.xy / tmp0.ww;
+                tmp1.xy = _ScreenParams.xy * float2(0.5, 0.5);
+                tmp0.xy = tmp0.xy * tmp1.xy;
+                tmp0.xy = round(tmp0.xy);
+                tmp0.xy = tmp0.xy / tmp1.xy;
+                o.position.xy = tmp0.ww * tmp0.xy;
+                o.position.zw = tmp0.zw;
+                o.color = v.color * _Color;
+                o.texcoord.xy = v.texcoord.xy;
+                return o;
+            }
 
-			Vertex_Stage_Output vert(Vertex_Stage_Input input)
-			{
-				Vertex_Stage_Output output;
-				output.uv = (input.uv.xy * _MainTex_ST.xy) + _MainTex_ST.zw;
-				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
-				return output;
-			}
+            #elif ETC1_EXTERNAL_ALPHA // :DX11VertexSM40
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
+            struct v2f
+            {
+                float4 position : SV_POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
 
-			Texture2D<float4> _MainTex;
-			SamplerState sampler_MainTex;
-			float4 _Color;
+            // CBs for DX11VertexSM40
+            float4 _Color; // 32 (starting at cb0[2].x)
+            // Textures for DX11VertexSM40
 
-			struct Fragment_Stage_Input
-			{
-				float2 uv : TEXCOORD0;
-			};
+            v2f vert(appdata v)
+            {
+                v2f o;
+                float4 tmp0;
+                float4 tmp1;
+                tmp0 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
+                tmp0 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp0;
+                tmp0 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp0;
+                tmp0 = tmp0 + unity_ObjectToWorld._m03_m13_m23_m33;
+                tmp1 = tmp0.yyyy * unity_MatrixVP._m01_m11_m21_m31;
+                tmp1 = unity_MatrixVP._m00_m10_m20_m30 * tmp0.xxxx + tmp1;
+                tmp1 = unity_MatrixVP._m02_m12_m22_m32 * tmp0.zzzz + tmp1;
+                o.position = unity_MatrixVP._m03_m13_m23_m33 * tmp0.wwww + tmp1;
+                o.color = v.color * _Color;
+                o.texcoord.xy = v.texcoord.xy;
+                return o;
+            }
 
-			float4 frag(Fragment_Stage_Input input) : SV_TARGET
-			{
-				return _MainTex.Sample(sampler_MainTex, input.uv.xy) * _Color;
-			}
+            #elif PIXELSNAP_ON // :DX11VertexSM40
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
+            struct v2f
+            {
+                float4 position : SV_POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
 
-			ENDHLSL
-		}
-	}
-	Fallback "Sprites/Default"
+            // CBs for DX11VertexSM40
+            float4 _Color; // 32 (starting at cb0[2].x)
+            // Textures for DX11VertexSM40
+
+            v2f vert(appdata v)
+            {
+                v2f o;
+                float4 tmp0;
+                float4 tmp1;
+                tmp0 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
+                tmp0 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp0;
+                tmp0 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp0;
+                tmp0 = tmp0 + unity_ObjectToWorld._m03_m13_m23_m33;
+                tmp1 = tmp0.yyyy * unity_MatrixVP._m01_m11_m21_m31;
+                tmp1 = unity_MatrixVP._m00_m10_m20_m30 * tmp0.xxxx + tmp1;
+                tmp1 = unity_MatrixVP._m02_m12_m22_m32 * tmp0.zzzz + tmp1;
+                tmp0 = unity_MatrixVP._m03_m13_m23_m33 * tmp0.wwww + tmp1;
+                tmp0.xy = tmp0.xy / tmp0.ww;
+                tmp1.xy = _ScreenParams.xy * float2(0.5, 0.5);
+                tmp0.xy = tmp0.xy * tmp1.xy;
+                tmp0.xy = round(tmp0.xy);
+                tmp0.xy = tmp0.xy / tmp1.xy;
+                o.position.xy = tmp0.ww * tmp0.xy;
+                o.position.zw = tmp0.zw;
+                o.color = v.color * _Color;
+                o.texcoord.xy = v.texcoord.xy;
+                return o;
+            }
+
+            #else
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
+            struct v2f
+            {
+                float4 position : SV_POSITION;
+                float4 color : COLOR;
+                float2 texcoord : TEXCOORD;
+            };
+
+            // CBs for DX11VertexSM40
+            float4 _Color; // 32 (starting at cb0[2].x)
+            // Textures for DX11VertexSM40
+
+            v2f vert(appdata v)
+            {
+                v2f o;
+                float4 tmp0;
+                float4 tmp1;
+                tmp0 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
+                tmp0 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp0;
+                tmp0 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp0;
+                tmp0 = tmp0 + unity_ObjectToWorld._m03_m13_m23_m33;
+                tmp1 = tmp0.yyyy * unity_MatrixVP._m01_m11_m21_m31;
+                tmp1 = unity_MatrixVP._m00_m10_m20_m30 * tmp0.xxxx + tmp1;
+                tmp1 = unity_MatrixVP._m02_m12_m22_m32 * tmp0.zzzz + tmp1;
+                o.position = unity_MatrixVP._m03_m13_m23_m33 * tmp0.wwww + tmp1;
+                o.color = v.color * _Color;
+                o.texcoord.xy = v.texcoord.xy;
+                return o;
+            }
+            #endif
+
+
+            #if ETC1_EXTERNAL_ALPHA && PIXELSNAP_ON // :DX11PixelSM40
+            struct fout
+            {
+                float4 sv_target : SV_Target;
+            };
+
+            // CBs for DX11PixelSM40
+            // Textures for DX11PixelSM40
+            sampler2D _AlphaTex; // 1
+            sampler2D _MainTex; // 0
+
+            fout frag(v2f inp)
+            {
+                fout o;
+                float4 tmp0;
+                float4 tmp1;
+                tmp0 = tex2D(_MainTex, inp.texcoord.xy);
+                tmp1 = tex2D(_AlphaTex, inp.texcoord.xy);
+                tmp0.w = tmp1.x;
+                tmp0 = tmp0 * inp.color;
+                o.sv_target.xyz = tmp0.www * tmp0.xyz;
+                o.sv_target.w = tmp0.w;
+                return o;
+            }
+
+            #elif ETC1_EXTERNAL_ALPHA // :DX11PixelSM40
+            struct fout
+            {
+                float4 sv_target : SV_Target;
+            };
+
+            // CBs for DX11PixelSM40
+            // Textures for DX11PixelSM40
+            sampler2D _AlphaTex; // 1
+            sampler2D _MainTex; // 0
+
+            fout frag(v2f inp)
+            {
+                fout o;
+                float4 tmp0;
+                float4 tmp1;
+                tmp0 = tex2D(_MainTex, inp.texcoord.xy);
+                tmp1 = tex2D(_AlphaTex, inp.texcoord.xy);
+                tmp0.w = tmp1.x;
+                tmp0 = tmp0 * inp.color;
+                o.sv_target.xyz = tmp0.www * tmp0.xyz;
+                o.sv_target.w = tmp0.w;
+                return o;
+            }
+
+            #elif PIXELSNAP_ON // :DX11PixelSM40
+            struct fout
+            {
+                float4 sv_target : SV_Target;
+            };
+
+            // CBs for DX11PixelSM40
+            // Textures for DX11PixelSM40
+            sampler2D _MainTex; // 0
+
+            fout frag(v2f inp)
+            {
+                fout o;
+                float4 tmp0;
+                tmp0 = tex2D(_MainTex, inp.texcoord.xy);
+                tmp0 = tmp0 * inp.color;
+                o.sv_target.xyz = tmp0.www * tmp0.xyz;
+                o.sv_target.w = tmp0.w;
+                return o;
+            }
+
+            #else
+            struct fout
+            {
+                float4 sv_target : SV_Target;
+            };
+
+            // CBs for DX11PixelSM40
+            // Textures for DX11PixelSM40
+            sampler2D _MainTex; // 0
+
+            fout frag(v2f inp)
+            {
+                fout o;
+                float4 tmp0;
+                tmp0 = tex2D(_MainTex, inp.texcoord.xy);
+                tmp0 = tmp0 * inp.color;
+                o.sv_target.xyz = tmp0.www * tmp0.xyz;
+                o.sv_target.w = tmp0.w;
+                return o;
+            }
+            #endif
+            ENDCG
+            
+        }
+    }
+    Fallback "Sprites/Default"
 }
