@@ -47,7 +47,7 @@ Shader "Sprites/Lit" {
             #pragma shader_feature BLACKTHREAD
             #pragma shader_feature COLOR_FLASH
             #pragma shader_feature ETC1_EXTERNAL_ALPHA
-            #pragma shader_feature INSTANCING_ON
+            // #pragma shader_feature INSTANCING_ON  (removed: decompiled instancing buffers PropsArray/unity_Builtins0Array/PerDrawSpriteArray are never declared)
             #pragma shader_feature PIXELSNAP_ON
             #pragma shader_feature SATURATION_LERP
 

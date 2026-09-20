@@ -45,7 +45,7 @@ Shader "Custom/Tracking Trail" {
             float _CutoutsCount; // 168 (starting at cb0[10].z)
             float2 _Cutouts[10]; // 176 (starting at cb0[11].x)
             // CBUFFER_START(Props) // 4
-                // float4 _TintColor; // 0 (starting at cb4[0].x)
+                float4 _TintColor; // 0 (starting at cb4[0].x)
             // CBUFFER_END
             // Textures for d3d11
             // Keywords: 
@@ -98,18 +98,19 @@ Shader "Custom/Tracking Trail" {
                 tmp1.x = min(_CutoutsCount, 10);
                 tmp0.xy = unity_ObjectToWorld._m03_m13 * v.vertex.ww + tmp0.xy;
                 tmp1.y = 0.0;
+                float2 tmp2_cutout;
                 for (int i = tmp1.y; i < tmp1.x; i += 1) {
                     tmp1.zw = tmp0.xy - _Cutouts[i];
                     tmp1.zw = tmp0.zw + tmp1.zw;
                     tmp1.zw = tmp1.zw * _PointMaskTex_ST.xy;
-                    cb0[0].xy = tmp1.zw;
+                    tmp2_cutout = tmp1.zw;
                 }
-                o.texcoord3.xy = cb0[0].xy;
-                o.texcoord4.xy = cb0[1].xy;
-                o.texcoord5.xy = cb0[2].xy;
+                o.texcoord3.xy = tmp2_cutout;
+                o.texcoord4.xy = float2(0.0, 0.0);
+                o.texcoord5.xy = float2(0.0, 0.0);
                 o.texcoord6.xy = _MainTex_ST.xy;
                 o.texcoord7.xy = float2(_SpeedX.x, _SpeedY.x);
-                o.texcoord8.xy = cb0[5].xy;
+                o.texcoord8.xy = float2(0.0, 0.0);
                 o.texcoord9.xy = _SecondaryTex_ST.xy;
                 o.texcoord10.xy = float2(_SecondarySpeedX.x, _SecondarySpeedY.x);
                 o.texcoord11.xy = _PointMaskTex_ST.xy;
