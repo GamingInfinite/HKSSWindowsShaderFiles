@@ -1,5 +1,9 @@
-Shader "Custom/Water" {
-    Properties {
+// Custom/Water It... might be less accurate now but it looks right?
+
+Shader "Custom/Water"
+{
+    Properties
+    {
         _MainTex ("Tint Texture", 2D) = "white" {}
         _Color ("Tint Color", Color) = (1, 1, 1, 1)
         _BumpAmt ("Distortion", Range(0, 128)) = 10
@@ -11,203 +15,153 @@ Shader "Custom/Water" {
         _ReflectionOffset ("Reflection Offset", Float) = 0
         _MaskTex ("Mask", 2D) = "white" {}
     }
-    SubShader {
-        Tags {
-            "QUEUE"="Transparent"
-            "RenderType"="Opaque"
+
+    SubShader
+    {
+        Tags
+        {
+            "Queue" = "Transparent"
+            "RenderType" = "Transparent"
+            "IgnoreProjector" = "True"
         }
 
-        GrabPass {
-            "_GrabTexture"
-        }
+        GrabPass { "_WaterGrab" }
 
-        Pass {
-            Name "MASK"
-            ZWrite Off
-            Cull Off
-            Stencil {
-                ReadMask 0
-                WriteMask 0
-            }
-        }
-        Pass {
+        Pass
+        {
             Name "BASE"
-            ZClip On
-            ZWrite Off
-            Tags {
-                "LIGHTMODE"="ALWAYS"
-                "QUEUE"="Transparent"
-                "RenderType"="Opaque"
-            }
-            CGPROGRAM
-            #include "UnityCG.cginc"
+            Tags { "LightMode" = "Always" }
 
+            Blend Off
+            ColorMask RGB
+            ZWrite Off
+            ZTest LEqual
+            Fog { Mode Off }
+
+            CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature_local ENABLE_REFLECTION
+            #include "UnityCG.cginc"
+
+            sampler2D _WaterGrab;
+            float4 _WaterGrab_TexelSize;
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            sampler2D _BumpMap;
+            float4 _BumpMap_ST;
+            sampler2D _MaskTex;
+
+            fixed4 _Color;
+            float _BumpAmt;
+            float _SpeedX;
+            float _SpeedY;
+            float _Reflection;
+            float _ReflectionOffset;
 
             struct appdata
             {
                 float4 vertex : POSITION;
-                float2 texcoord : TEXCOORD;
-            };
-            struct v2f
-            {
-                float4 position : SV_POSITION;
-                float4 texcoord : TEXCOORD;
-                float2 texcoord1 : TEXCOORD1;
-                float2 texcoord2 : TEXCOORD2;
-                float2 texcoord3 : TEXCOORD3;
+                float2 uv : TEXCOORD0;
             };
 
-            // CBs for DX11VertexSM40
-            float4 _BumpMap_ST; // 48 (starting at cb0[3].x)
-            float4 _MainTex_ST; // 64 (starting at cb0[4].x)
-            // Textures for DX11VertexSM40
+            struct v2f
+            {
+                float4 pos : SV_POSITION;
+                float4 grabPos : TEXCOORD0;
+                float2 mainUV : TEXCOORD1;
+                float2 bumpUV : TEXCOORD2;
+                float2 uv : TEXCOORD3;
+                float mirrorY : TEXCOORD4;
+            };
 
             v2f vert(appdata v)
             {
                 v2f o;
-                float4 tmp0;
-                float4 tmp1;
-                tmp0 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
-                tmp0 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp0;
-                tmp0 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp0;
-                tmp1 = tmp0 + unity_ObjectToWorld._m03_m13_m23_m33;
-                tmp0.xy = unity_ObjectToWorld._m03_m13 * v.vertex.ww + tmp0.xy;
-                o.texcoord1.xy = tmp0.xy * _BumpMap_ST.xy + _BumpMap_ST.zw;
-                tmp0 = tmp1.yyyy * unity_MatrixVP._m01_m11_m21_m31;
-                tmp0 = unity_MatrixVP._m00_m10_m20_m30 * tmp1.xxxx + tmp0;
-                tmp0 = unity_MatrixVP._m02_m12_m22_m32 * tmp1.zzzz + tmp0;
-                tmp0 = unity_MatrixVP._m03_m13_m23_m33 * tmp1.wwww + tmp0;
-                o.position = tmp0;
-                tmp0.xy = tmp0.xy * float2(1.0, -1.0) + tmp0.ww;
-                o.texcoord.zw = tmp0.zw;
-                o.texcoord.xy = tmp0.xy * float2(0.5, 0.5);
-                o.texcoord2.xy = v.texcoord.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-                o.texcoord3.xy = v.texcoord.xy * float2(1.0, -1.0) + float2(0.0, 1.0);
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.grabPos = ComputeGrabScreenPos(o.pos);
+
+                float3 worldPos = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0)).xyz;
+                o.bumpUV = worldPos.xy * _BumpMap_ST.xy + _BumpMap_ST.zw;
+                o.mainUV = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv = v.uv;
+
+                float3 pivot = float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23);
+                float4 mirrorGrab = ComputeGrabScreenPos(UnityWorldToClipPos(pivot + float3(0, _ReflectionOffset, 0)));
+                o.mirrorY = mirrorGrab.y / mirrorGrab.w;
                 return o;
             }
 
-            struct fout
+            fixed4 frag(v2f i) : SV_Target
             {
-                float4 sv_target : SV_Target;
-            };
+                float2 scroll = float2(_SpeedX, _SpeedY) * _Time.y;
+                fixed4 n = tex2D(_BumpMap, i.bumpUV + scroll);
+                float2 nxy = float2(n.a * n.r, n.g) * 2.0 - 1.0;
 
-            // CBs for DX11PixelSM40
-            float _BumpAmt; // 32 (starting at cb0[2].x)
-            float _SpeedX; // 80 (starting at cb0[5].x)
-            float _SpeedY; // 84 (starting at cb0[5].y)
-            float4 _GrabTexture_TexelSize; // 96 (starting at cb0[6].x)
-            float4 _Color; // 112 (starting at cb0[7].x)
-            float _Reflection; // 128 (starting at cb0[8].x)
-            // Textures for DX11PixelSM40
-            sampler2D _GrabTexture; // 0
-            sampler2D _BumpMap; // 1
-            sampler2D _MainTex; // 2
-            sampler2D _MaskTex; // 3
+                float2 offset = nxy * _BumpAmt * _WaterGrab_TexelSize.xy;
+                float2 screenUV = i.grabPos.xy / i.grabPos.w;
+                float2 distUV = saturate((i.grabPos.xy + offset * i.grabPos.z) / i.grabPos.w);
 
-            fout frag(v2f inp)
-            {
-                fout o;
-                float4 tmp0;
-                float4 tmp1;
-                float4 tmp2;
-                tmp0.xy = float2(_SpeedX.x, _SpeedY.x) * _Time.yy + inp.texcoord1.xy;
-                tmp0 = tex2D(_BumpMap, tmp0.xy);
-                tmp0.x = tmp0.w * tmp0.x;
-                tmp0.xy = tmp0.xy * float2(2.0, 2.0) + float2(-1.0, -1.0);
-                tmp0.xy = tmp0.xy * _BumpAmt.xx;
-                tmp0.xz = tmp0.xy * _GrabTexture_TexelSize.xy;
-                tmp0.y = tmp0.y * _GrabTexture_TexelSize.y + inp.texcoord3.y;
-                tmp0.y = 1.0 - tmp0.y;
-                tmp0.y = tmp0.y * _Reflection;
-                tmp0.xz = tmp0.xz * inp.texcoord.zz + inp.texcoord.xy;
-                tmp0.xz = tmp0.xz / inp.texcoord.ww;
-                tmp1 = tex2D(_GrabTexture, tmp0.xz);
-                tmp2 = tex2D(_MainTex, inp.texcoord2.xy);
-                tmp1 = tmp1 * tmp2;
-                tmp0 = tmp1 * _Color + tmp0.yyyy;
-                tmp1.xy = inp.texcoord.xy / inp.texcoord.ww;
-                tmp1 = tex2D(_GrabTexture, tmp1.xy);
-                tmp0 = tmp0 - tmp1;
-                tmp2 = tex2D(_MaskTex, inp.texcoord2.xy);
-                o.sv_target = tmp2.xxxx * tmp0 + tmp1;
-                return o;
+                fixed4 scene = tex2D(_WaterGrab, saturate(screenUV));
+                fixed4 water = tex2D(_WaterGrab, distUV) * tex2D(_MainTex, i.mainUV) * _Color;
+
+                #if defined(ENABLE_REFLECTION)
+                    float2 reflUV = float2(distUV.x, 2.0 * i.mirrorY - distUV.y);
+                    fixed4 refl = tex2D(_WaterGrab, saturate(reflUV)) * _Color;
+                    water.rgb = lerp(water.rgb, refl.rgb, _Reflection * 0.5);
+                #else
+                    float grad = (i.uv.y - offset.y) * _Reflection;
+                    water.rgb += grad;
+                #endif
+
+                float mask = tex2D(_MaskTex, i.mainUV).r;
+                fixed4 col;
+                col.rgb = max(0, lerp(scene.rgb, water.rgb, mask));
+                col.a = 1;
+                return col;
             }
             ENDCG
         }
     }
-    SubShader {
-        Tags {
-            "QUEUE"="Transparent"
-            "RenderType"="Opaque"
-        }
-        Pass {
-            Name "BASE"
-            Blend DstColor Zero, DstColor Zero
-            ZClip On
-            ZWrite Off
-            Fog {
-                Mode Off
-            }
-            Tags {
-                "QUEUE"="Transparent"
-                "RenderType"="Opaque"
-            }
-            CGPROGRAM
-            #include "UnityCG.cginc"
 
+    SubShader
+    {
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" }
+
+        Pass
+        {
+            Name "BASE"
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
+            Fog { Mode Off }
+
+            CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #include "UnityCG.cginc"
 
-            struct appdata
-            {
-                float3 vertex : POSITION;
-                float3 texcoord : TEXCOORD;
-            };
-            struct v2f
-            {
-                float4 color : COLOR;
-                float2 texcoord : TEXCOORD;
-                float4 position : SV_POSITION;
-            };
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            sampler2D _MaskTex;
+            fixed4 _Color;
 
-            // CBs for DX11VertexSM40
-            float4 _MainTex_ST; // 32 (starting at cb0[2].x)
-            // Textures for DX11VertexSM40
+            struct appdata { float4 vertex : POSITION; float2 uv : TEXCOORD0; };
+            struct v2f { float4 pos : SV_POSITION; float2 uv : TEXCOORD0; };
 
             v2f vert(appdata v)
             {
                 v2f o;
-                float4 tmp0;
-                float4 tmp1;
-                o.color = float4(0.0, 0.0, 0.0, 1.0);
-                o.texcoord.xy = v.texcoord.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-                tmp0 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
-                tmp0 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp0;
-                tmp0 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp0;
-                tmp0 = tmp0 + unity_ObjectToWorld._m03_m13_m23_m33;
-                tmp1 = tmp0.yyyy * unity_MatrixVP._m01_m11_m21_m31;
-                tmp1 = unity_MatrixVP._m00_m10_m20_m30 * tmp0.xxxx + tmp1;
-                tmp1 = unity_MatrixVP._m02_m12_m22_m32 * tmp0.zzzz + tmp1;
-                o.position = unity_MatrixVP._m03_m13_m23_m33 * tmp0.wwww + tmp1;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
 
-            struct fout
+            fixed4 frag(v2f i) : SV_Target
             {
-                float4 sv_target : SV_Target;
-            };
-
-            // CBs for DX11PixelSM40
-            // Textures for DX11PixelSM40
-            sampler2D _MainTex; // 0
-
-            fout frag(v2f inp)
-            {
-                fout o;
-                o.sv_target = tex2D(_MainTex, inp.texcoord.xy);
-                return o;
+                fixed4 c = tex2D(_MainTex, i.uv) * _Color;
+                c.a *= tex2D(_MaskTex, i.uv).r;
+                return c;
             }
             ENDCG
         }
