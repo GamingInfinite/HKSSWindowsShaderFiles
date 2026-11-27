@@ -1424,7 +1424,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -2055,7 +2055,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -2451,7 +2451,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -2690,7 +2690,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -2929,7 +2929,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -3309,7 +3309,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -3527,7 +3527,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -3745,7 +3745,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -3961,7 +3961,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -4200,7 +4200,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -4430,7 +4430,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -4726,7 +4726,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -4944,7 +4944,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -5153,7 +5153,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -5435,7 +5435,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;
@@ -5804,7 +5804,7 @@ Shader "Sprites/Tiled Scrolling Masked" {
                 tmp0.x = dot(tmp0.xy, tmp3.yz);
                 tmp0.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.y = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.y;
-                tmp0.y = tmp0.y + _Time.y;
+                tmp0.y = tmp0.y + tmp0.w * _Time.y;
                 tmp1.z = _SpeedX * tmp0.y + tmp0.x;
                 tmp1.w = _SpeedY * tmp0.y + tmp0.z;
                 o.texcoord1.xy = tmp1.zw * _ScrollTex_ST.xy + _ScrollTex_ST.zw;

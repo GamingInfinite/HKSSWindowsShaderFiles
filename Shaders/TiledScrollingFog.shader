@@ -91,6 +91,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp0.yz = tmp0.yz < float2(0.0, 0.0);
                 tmp0.yz = tmp0.yz - tmp1.xy;
                 tmp0.yz = floor(tmp0.yz);
+                tmp3.yz = tmp0.yz;
                 tmp1 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
                 tmp1 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp1;
                 tmp1 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp1;
@@ -107,7 +108,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp2.x = dot(tmp2.xy, tmp5.yz);
                 tmp2.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.x = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp2.y;
-                tmp0.x = tmp0.x + _Time.y;
+                tmp0.x = tmp0.x + tmp3.z * _Time.y;
                 tmp2.x = _SpeedX * tmp0.x + tmp2.x;
                 tmp2.y = _SpeedY * tmp0.x + tmp0.w;
                 o.texcoord.xy = tmp2.xy * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -266,6 +267,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp0.yz = tmp0.yz < float2(0.0, 0.0);
                 tmp0.yz = tmp0.yz - tmp1.xy;
                 tmp0.yz = floor(tmp0.yz);
+                tmp3.yz = tmp0.yz;
                 tmp1 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
                 tmp1 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp1;
                 tmp1 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp1;
@@ -281,7 +283,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp0.y = dot(tmp0.yz, tmp4.yz);
                 tmp0.z = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.x = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.z;
-                tmp0.x = tmp0.x + _Time.y;
+                tmp0.x = tmp0.x + tmp3.z * _Time.y;
                 tmp2.x = _SpeedX * tmp0.x + tmp0.y;
                 tmp2.y = _SpeedY * tmp0.x + tmp0.w;
                 o.texcoord.xy = tmp2.xy * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -353,6 +355,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp0.yz = tmp0.yz < float2(0.0, 0.0);
                 tmp0.yz = tmp0.yz - tmp1.xy;
                 tmp0.yz = floor(tmp0.yz);
+                tmp3.yz = tmp0.yz;
                 tmp1 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
                 tmp1 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp1;
                 tmp1 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp1;
@@ -369,7 +372,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp2.x = dot(tmp2.xy, tmp5.yz);
                 tmp2.y = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.x = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp2.y;
-                tmp0.x = tmp0.x + _Time.y;
+                tmp0.x = tmp0.x + tmp3.z * _Time.y;
                 tmp2.x = _SpeedX * tmp0.x + tmp2.x;
                 tmp2.y = _SpeedY * tmp0.x + tmp0.w;
                 o.texcoord.xy = tmp2.xy * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -573,6 +576,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp0.yz = tmp0.yz < float2(0.0, 0.0);
                 tmp0.yz = tmp0.yz - tmp1.xy;
                 tmp0.yz = floor(tmp0.yz);
+                tmp3.yz = tmp0.yz;
                 tmp1 = v.vertex.yyyy * unity_ObjectToWorld._m01_m11_m21_m31;
                 tmp1 = unity_ObjectToWorld._m00_m10_m20_m30 * v.vertex.xxxx + tmp1;
                 tmp1 = unity_ObjectToWorld._m02_m12_m22_m32 * v.vertex.zzzz + tmp1;
@@ -588,7 +592,7 @@ Shader "Custom/Tiled Scrolling Fog" {
                 tmp0.y = dot(tmp0.yz, tmp4.yz);
                 tmp0.z = dot(unity_ObjectToWorld._m13_m03, float2(_WorldOffsetY.x, _WorldOffsetX.x));
                 tmp0.x = unity_ObjectToWorld._m23 * _WorldOffsetZ + tmp0.z;
-                tmp0.x = tmp0.x + _Time.y;
+                tmp0.x = tmp0.x + tmp3.z * _Time.y;
                 tmp2.x = _SpeedX * tmp0.x + tmp0.y;
                 tmp2.y = _SpeedY * tmp0.x + tmp0.w;
                 o.texcoord.xy = tmp2.xy * _MainTex_ST.xy + _MainTex_ST.zw;
